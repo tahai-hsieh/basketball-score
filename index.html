@@ -831,6 +831,10 @@
     </div>
   </div>
 
+<!-- 引入 Firebase Realtime Database SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
 <script>
   // 鎖定畫面連點兩下不放大，但保留連點兩下按鈕觸發
   let lastTouchEnd = 0;
@@ -848,6 +852,14 @@
   document.addEventListener('dblclick', (e) => {
     e.preventDefault();
   }, { passive: false });
+
+  const firebaseConfig = {
+    databaseURL: "https://score-record-0000-default-rtdb.asia-southeast1.firebasedatabase.app/"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+  const stateRef = db.ref('tpbl_scoreboard/state');
+  const logsRef = db.ref('tpbl_scoreboard/logs');
 
   const params = new URLSearchParams(window.location.search);
   const viewParam = params.get('view');
@@ -870,6 +882,7 @@
 
   let state = loadState();
   let animTimers = { t1: null, t2: null };
+  let lastActionId = 0;
 
   function loadState() {
     try {
@@ -880,11 +893,36 @@
     }
   }
 
-  function saveState(broadcast = true) {
+  function saveState(broadcast = true, actionMeta = null) {
+    const actionId = Date.now() + Math.random();
+    lastActionId = actionId;
+    state.updatedAt = new Date().toISOString();
+    state.lastAction = actionMeta ? { ...actionMeta, actionId } : { type: 'sync', actionId };
+
     localStorage.setItem('tpbl_clean_state_v2', JSON.stringify(state));
     if (broadcast) {
       channel.postMessage({ type: 'sync', state });
     }
+
+    stateRef.set(state).catch((err) => {
+      console.error('Firebase 寫入失敗：', err);
+    });
+  }
+
+  function pushFirebaseLog(actionDesc, extraData = {}) {
+    logsRef.push({
+      timestamp: new Date().toISOString(),
+      period: state.period,
+      action: actionDesc,
+      gameTitle: state.gameTitle,
+      t1_name: state.t1.name,
+      t1_total: getTotal(state.t1),
+      t2_name: state.t2.name,
+      t2_total: getTotal(state.t2),
+      ...extraData
+    }).catch((err) => {
+      console.error('Firebase 紀錄寫入失敗：', err);
+    });
   }
 
   function getTotal(teamObj) {
@@ -901,7 +939,6 @@
     return p === 1 ? '1st' : p === 2 ? '2nd' : p === 3 ? '3rd' : '4th';
   }
 
-  // 僅根據使用者手動按 Enter 的行數與寬度自動縮放字級，不自動換行
   function adjustTitleFontSize(text) {
     const lines = (text || '').split('\n');
     const lineCount = Math.max(1, lines.length);
@@ -922,7 +959,6 @@
     fitElement(sumTitle, 385, 25);
   }
 
-  // 隨載具（手機直向、橫向、平板、OBS視窗）自動等比例縮放計分板
   function adjustResponsiveScale() {
     const pairs = [
       { outer: document.getElementById('scale-outer-live'), inner: document.getElementById('scale-inner-live') },
@@ -1095,7 +1131,9 @@
     state[teamKey][qKey] = Math.max(0, curQScore + delta);
     const newTotal = getTotal(state[teamKey]);
 
-    saveState(true);
+    saveState(false, { type: 'score_update', teamKey, delta, oldTotal, newTotal });
+    pushFirebaseLog(`${state[teamKey].name} ${delta > 0 ? '+' + delta : delta}`, { teamKey, delta, oldTotal, newTotal });
+
     renderUI(teamKey);
     playScoreAnimation(teamKey, delta, oldTotal, newTotal);
 
@@ -1112,18 +1150,21 @@
     if (state.t2[qKey] === null || state.t2[qKey] === undefined) state.t2[qKey] = 0;
 
     saveState(true);
+    pushFirebaseLog(`切換至第 ${p} 節（犯規重置）`);
     renderUI();
   }
 
   function changeFouls(teamKey, delta) {
     state[teamKey].fouls = Math.max(0, Math.min(5, (state[teamKey].fouls || 0) + delta));
     saveState(true);
+    pushFirebaseLog(`${state[teamKey].name} 團犯變更為 ${state[teamKey].fouls} 次`);
     renderUI();
   }
 
   function setFoulsDirect(teamKey, val) {
     state[teamKey].fouls = (state[teamKey].fouls === val) ? val - 1 : val;
     saveState(true);
+    pushFirebaseLog(`${state[teamKey].name} 團犯變更為 ${state[teamKey].fouls} 次`);
     renderUI();
   }
 
@@ -1217,18 +1258,45 @@
     renderUI();
   }
 
+  // 🔄 歸零重設：同時刪除 Firebase 雲端資料、清空本地快取並重新整理
   function resetAllScores() {
-    state.period = 1;
-    ['t1', 't2'].forEach(k => {
-      state[k].fouls = 0;
-      state[k].q1 = 0;
-      state[k].q2 = null;
-      state[k].q3 = null;
-      state[k].q4 = null;
+    if (!confirm('確定要將整場比賽比分與資料歸零重設嗎？這將會同步清除雲端與本機所有資料。')) return;
+
+    stateRef.remove().then(() => {
+      localStorage.removeItem('tpbl_clean_state_v2');
+      channel.postMessage({ type: 'reset' });
+      location.reload();
+    }).catch((err) => {
+      console.error('Firebase 清除失敗：', err);
+      localStorage.removeItem('tpbl_clean_state_v2');
+      location.reload();
     });
-    saveState(true);
-    renderUI();
   }
+
+  stateRef.on('value', (snapshot) => {
+    const cloudData = snapshot.val();
+    if (!cloudData) return;
+
+    const incomingActionId = cloudData.lastAction ? cloudData.lastAction.actionId : 0;
+    if (incomingActionId && incomingActionId === lastActionId) return;
+    lastActionId = incomingActionId;
+
+    state = {
+      ...defaultState,
+      ...cloudData,
+      t1: { ...defaultState.t1, ...(cloudData.t1 || {}) },
+      t2: { ...defaultState.t2, ...(cloudData.t2 || {}) }
+    };
+    localStorage.setItem('tpbl_clean_state_v2', JSON.stringify(state));
+
+    if (cloudData.lastAction && cloudData.lastAction.type === 'score_update') {
+      const act = cloudData.lastAction;
+      renderUI(act.teamKey);
+      playScoreAnimation(act.teamKey, act.delta, act.oldTotal, act.newTotal);
+    } else {
+      renderUI();
+    }
+  });
 
   channel.onmessage = (ev) => {
     if (!ev.data) return;
@@ -1239,6 +1307,9 @@
       state = ev.data.state;
       renderUI(ev.data.teamKey);
       playScoreAnimation(ev.data.teamKey, ev.data.delta, ev.data.oldTotal, ev.data.newTotal);
+    } else if (ev.data.type === 'reset') {
+      localStorage.removeItem('tpbl_clean_state_v2');
+      location.reload();
     }
   };
 
