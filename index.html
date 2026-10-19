@@ -262,7 +262,7 @@
     width: 100%;
   }
 
-  /* 左右犯規橫條固定於兩隊色塊下方寬度內，且統一由左到右排列 */
+  /* 左右犯規橫條固定於兩隊色塊下方寬度內 */
   .live-foul-section {
     display: flex;
     align-items: center;
@@ -271,7 +271,7 @@
   }
 
   .live-foul-section.away {
-    flex-direction: row;
+    flex-direction: row-reverse;
   }
 
   .foul-bars {
@@ -281,7 +281,7 @@
   }
 
   .live-foul-section.away .foul-bars {
-    flex-direction: row;
+    flex-direction: row-reverse;
   }
 
   .foul-bar-item {
@@ -641,9 +641,9 @@
               </div>
               <div class="live-score-box" id="box-t1">
                 <div class="score-track" id="track-t1">
-                  <div class="score-slot" id="slot-t1-cur">86</div>
+                  <div class="score-slot" id="slot-t1-cur">0</div>
                   <div class="score-slot plus-badge" id="slot-t1-plus">+2</div>
-                  <div class="score-slot" id="slot-t1-next">86</div>
+                  <div class="score-slot" id="slot-t1-next">0</div>
                 </div>
                 <div class="shake-plus3-layer" id="shake-t1">
                   <span id="shake-text-t1">+3</span>
@@ -651,7 +651,7 @@
               </div>
             </div>
 
-            <div class="live-center-period" id="live-period">4th</div>
+            <div class="live-center-period" id="live-period">1st</div>
 
             <div class="live-team away">
               <div class="live-team-banner" id="live-t2-bg" style="background: #689f38;">
@@ -662,9 +662,9 @@
               </div>
               <div class="live-score-box" id="box-t2">
                 <div class="score-track" id="track-t2">
-                  <div class="score-slot" id="slot-t2-cur">51</div>
+                  <div class="score-slot" id="slot-t2-cur">0</div>
                   <div class="score-slot plus-badge" id="slot-t2-plus">+2</div>
-                  <div class="score-slot" id="slot-t2-next">51</div>
+                  <div class="score-slot" id="slot-t2-next">0</div>
                 </div>
                 <div class="shake-plus3-layer" id="shake-t2">
                   <span id="shake-text-t2">+3</span>
@@ -712,11 +712,11 @@
               <img id="sum-t1-logo" class="team-logo" src="" alt="" style="display:none;">
               <div class="team-name" id="sum-t1-name">寶山里</div>
             </div>
-            <div class="score-q" id="sum-t1-q1">8</div>
-            <div class="score-q" id="sum-t1-q2">1</div>
-            <div class="score-q" id="sum-t1-q3">8</div>
-            <div class="score-q" id="sum-t1-q4">69</div>
-            <div class="score-total" id="sum-t1-total">86</div>
+            <div class="score-q" id="sum-t1-q1">0</div>
+            <div class="score-q" id="sum-t1-q2"></div>
+            <div class="score-q" id="sum-t1-q3"></div>
+            <div class="score-q" id="sum-t1-q4"></div>
+            <div class="score-total" id="sum-t1-total">0</div>
           </div>
 
           <div class="row team-row">
@@ -724,11 +724,11 @@
               <img id="sum-t2-logo" class="team-logo" src="" alt="" style="display:none;">
               <div class="team-name" id="sum-t2-name">勤和里</div>
             </div>
-            <div class="score-q" id="sum-t2-q1">6</div>
-            <div class="score-q" id="sum-t2-q2">0</div>
-            <div class="score-q" id="sum-t2-q3">0</div>
-            <div class="score-q" id="sum-t2-q4">45</div>
-            <div class="score-total" id="sum-t2-total">51</div>
+            <div class="score-q" id="sum-t2-q1">0</div>
+            <div class="score-q" id="sum-t2-q2"></div>
+            <div class="score-q" id="sum-t2-q3"></div>
+            <div class="score-q" id="sum-t2-q4"></div>
+            <div class="score-total" id="sum-t2-total">0</div>
           </div>
         </div>
       </div>
@@ -749,7 +749,7 @@
         <button class="period-btn" id="pbtn-3" onclick="changePeriod(3)">3rd</button>
         <button class="period-btn" id="pbtn-4" onclick="changePeriod(4)">4th</button>
       </div>
-      <button class="ctrl-btn" style="background:#7f1d1d; border-color:#991b1b;" onclick="resetAllScores()">🔄 歸零重設</button>
+      <button class="ctrl-btn" id="reset-btn" style="background:#7f1d1d; border-color:#991b1b;" onclick="resetAllScores()">🔄 歸零重設</button>
     </div>
 
     <div class="teams-ctrl-grid">
@@ -831,7 +831,6 @@
     </div>
   </div>
 
-<!-- 引入 Firebase Realtime Database SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
@@ -858,8 +857,11 @@
   };
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
+  const rootRef = db.ref('tpbl_scoreboard');
   const stateRef = db.ref('tpbl_scoreboard/state');
   const logsRef = db.ref('tpbl_scoreboard/logs');
+
+  const STORAGE_KEY = 'tpbl_clean_state_v2';
 
   const params = new URLSearchParams(window.location.search);
   const viewParam = params.get('view');
@@ -873,24 +875,71 @@
 
   const channel = new BroadcastChannel('tpbl_clean_sync_v2');
 
+  // 預設狀態統一為第 1 節 0 分，未開始節數使用空字串 ''（避免 Firebase 將 null 視為刪除欄位）
   const defaultState = {
     gameTitle: '桃源區運動會社會女子組籃球決賽',
-    period: 4,
-    t1: { name: '寶山里', color: '#a80707', logo: '', fouls: 0, q1: 8, q2: 1, q3: 8, q4: 69 },
-    t2: { name: '勤和里', color: '#689f38', logo: '', fouls: 0, q1: 6, q2: 0, q3: 0, q4: 45 }
+    period: 1,
+    t1: { name: '寶山里', color: '#a80707', logo: '', fouls: 0, q1: 0, q2: '', q3: '', q4: '' },
+    t2: { name: '勤和里', color: '#689f38', logo: '', fouls: 0, q1: 0, q2: '', q3: '', q4: '' }
   };
 
   let state = loadState();
   let animTimers = { t1: null, t2: null };
   let lastActionId = 0;
 
+  function normalizeTeam(rawTeam, fallbackTeam) {
+    const t = rawTeam || {};
+    return {
+      name: t.name !== undefined ? t.name : fallbackTeam.name,
+      color: t.color !== undefined ? t.color : fallbackTeam.color,
+      logo: t.logo !== undefined ? t.logo : fallbackTeam.logo,
+      fouls: Number(t.fouls) || 0,
+      q1: (t.q1 === '' || t.q1 === null || t.q1 === undefined) ? 0 : Number(t.q1),
+      q2: (t.q2 === '' || t.q2 === null || t.q2 === undefined) ? '' : Number(t.q2),
+      q3: (t.q3 === '' || t.q3 === null || t.q3 === undefined) ? '' : Number(t.q3),
+      q4: (t.q4 === '' || t.q4 === null || t.q4 === undefined) ? '' : Number(t.q4)
+    };
+  }
+
+  function normalizeState(raw) {
+    if (!raw) return JSON.parse(JSON.stringify(defaultState));
+    return {
+      gameTitle: raw.gameTitle !== undefined ? raw.gameTitle : defaultState.gameTitle,
+      period: Number(raw.period) || 1,
+      t1: normalizeTeam(raw.t1, defaultState.t1),
+      t2: normalizeTeam(raw.t2, defaultState.t2),
+      updatedAt: raw.updatedAt || null,
+      lastAction: raw.lastAction || null
+    };
+  }
+
   function loadState() {
     try {
-      const saved = localStorage.getItem('tpbl_clean_state_v2');
-      return saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(defaultState));
+      const saved = localStorage.getItem(STORAGE_KEY);
+      return saved ? normalizeState(JSON.parse(saved)) : JSON.parse(JSON.stringify(defaultState));
     } catch (e) {
       return JSON.parse(JSON.stringify(defaultState));
     }
+  }
+
+  function clearAllAnimations() {
+    ['t1', 't2'].forEach(k => {
+      if (animTimers[k]) {
+        clearTimeout(animTimers[k]);
+        animTimers[k] = null;
+      }
+      const track = document.getElementById(`track-${k}`);
+      const shakeLayer = document.getElementById(`shake-${k}`);
+      const shakeText = document.getElementById(`shake-text-${k}`);
+      if (track) {
+        track.classList.remove('animating-slide');
+        track.style.transform = 'translateY(0)';
+        track.style.visibility = 'visible';
+        track.style.opacity = '1';
+      }
+      if (shakeLayer) shakeLayer.style.display = 'none';
+      if (shakeText) shakeText.classList.remove('animating-shake-text');
+    });
   }
 
   function saveState(broadcast = true, actionMeta = null) {
@@ -899,7 +948,7 @@
     state.updatedAt = new Date().toISOString();
     state.lastAction = actionMeta ? { ...actionMeta, actionId } : { type: 'sync', actionId };
 
-    localStorage.setItem('tpbl_clean_state_v2', JSON.stringify(state));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     if (broadcast) {
       channel.postMessage({ type: 'sync', state });
     }
@@ -939,6 +988,7 @@
     return p === 1 ? '1st' : p === 2 ? '2nd' : p === 3 ? '3rd' : '4th';
   }
 
+  // 僅根據使用者手動按 Enter 的行數與寬度自動縮放字級，不自動換行
   function adjustTitleFontSize(text) {
     const lines = (text || '').split('\n');
     const lineCount = Math.max(1, lines.length);
@@ -959,6 +1009,7 @@
     fitElement(sumTitle, 385, 25);
   }
 
+  // 隨載具（手機直向、橫向、平板、OBS視窗）自動等比例縮放計分板
   function adjustResponsiveScale() {
     const pairs = [
       { outer: document.getElementById('scale-outer-live'), inner: document.getElementById('scale-inner-live') },
@@ -995,7 +1046,7 @@
   }
 
   function renderUI(skipTeamKey = null) {
-    const titleText = state.gameTitle !== undefined ? state.gameTitle : '桃源區運動會社會女子組籃球決賽';
+    const titleText = state.gameTitle !== undefined ? state.gameTitle : defaultState.gameTitle;
     document.getElementById('live-title-display').textContent = titleText;
 
     const sumTitle = document.getElementById('sum-league-title');
@@ -1059,11 +1110,13 @@
       document.getElementById(`sum-${k}-total`).textContent = total;
 
       const nameInput = document.getElementById(`in-${k}-name`);
-      if (document.activeElement !== nameInput) {
+      if (nameInput && document.activeElement !== nameInput) {
         nameInput.value = t.name;
       }
-      document.getElementById(`in-${k}-color`).value = t.color;
-      document.getElementById(`del-logo-${k}`).style.display = t.logo ? 'inline-block' : 'none';
+      const colorInput = document.getElementById(`in-${k}-color`);
+      if (colorInput) colorInput.value = t.color;
+      const delLogoBtn = document.getElementById(`del-logo-${k}`);
+      if (delLogoBtn) delLogoBtn.style.display = t.logo ? 'inline-block' : 'none';
     });
 
     adjustResponsiveScale();
@@ -1127,7 +1180,7 @@
   function addScore(teamKey, delta) {
     const oldTotal = getTotal(state[teamKey]);
     const qKey = `q${state.period}`;
-    const curQScore = state[teamKey][qKey] || 0;
+    const curQScore = Number(state[teamKey][qKey]) || 0;
     state[teamKey][qKey] = Math.max(0, curQScore + delta);
     const newTotal = getTotal(state[teamKey]);
 
@@ -1146,8 +1199,8 @@
     state.t2.fouls = 0;
 
     const qKey = `q${p}`;
-    if (state.t1[qKey] === null || state.t1[qKey] === undefined) state.t1[qKey] = 0;
-    if (state.t2[qKey] === null || state.t2[qKey] === undefined) state.t2[qKey] = 0;
+    if (state.t1[qKey] === '' || state.t1[qKey] === null || state.t1[qKey] === undefined) state.t1[qKey] = 0;
+    if (state.t2[qKey] === '' || state.t2[qKey] === null || state.t2[qKey] === undefined) state.t2[qKey] = 0;
 
     saveState(true);
     pushFirebaseLog(`切換至第 ${p} 節（犯規重置）`);
@@ -1181,6 +1234,7 @@
     renderUI();
   }
 
+  // 自動偵測上傳圖片的實際邊界（裁去多餘透明留白）並等比例置中繪製成 256x256 標準正方形
   function normalizeLogoToSquare(dataUrl, callback) {
     const img = new Image();
     img.onload = () => {
@@ -1258,38 +1312,72 @@
     renderUI();
   }
 
-  // 🔄 歸零重設：同時刪除 Firebase 雲端資料、清空本地快取並重新整理
+  // 歸零重設：清除本機、刪除 Firebase 舊狀態與所有歷史紀錄 (logs)，並強制同步至 OBS 端
   function resetAllScores() {
-    if (!confirm('確定要將整場比賽比分與資料歸零重設嗎？這將會同步清除雲端與本機所有資料。')) return;
+    clearAllAnimations();
 
-    stateRef.remove().then(() => {
-      localStorage.removeItem('tpbl_clean_state_v2');
-      channel.postMessage({ type: 'reset' });
-      location.reload();
+    state.period = 1;
+    ['t1', 't2'].forEach(k => {
+      state[k].fouls = 0;
+      state[k].q1 = 0;
+      state[k].q2 = '';
+      state[k].q3 = '';
+      state[k].q4 = '';
+    });
+
+    const actionId = Date.now() + Math.random();
+    lastActionId = actionId;
+    state.updatedAt = new Date().toISOString();
+    state.lastAction = { type: 'reset', actionId };
+
+    // 1. 徹底清除本機暫存並重新寫入歸零狀態
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+
+    // 2. 立即更新當前畫面與同機 OBS 分頁
+    renderUI();
+    channel.postMessage({ type: 'reset', state });
+
+    // 3. 刪除 Firebase 後台所有舊資料 (包含 state 與 logs)，並寫入乾淨歸零狀態以觸發遠端 OBS 同步
+    rootRef.set({
+      state: state,
+      logs: null
+    }).then(() => {
+      const btn = document.getElementById('reset-btn');
+      if (btn) {
+        const origText = btn.textContent;
+        btn.textContent = '✅ 已全部歸零';
+        setTimeout(() => { btn.textContent = origText; }, 1200);
+      }
     }).catch((err) => {
-      console.error('Firebase 清除失敗：', err);
-      localStorage.removeItem('tpbl_clean_state_v2');
-      location.reload();
+      console.error('Firebase 歸零重設失敗：', err);
     });
   }
 
+  // 監聽 Firebase 資料變動（支援跨裝置與 OBS 瀏覽器來源即時同步）
   stateRef.on('value', (snapshot) => {
     const cloudData = snapshot.val();
-    if (!cloudData) return;
+
+    // 若 Firebase 後台整個節點被刪除，本機與 OBS 同步歸零
+    if (!cloudData) {
+      clearAllAnimations();
+      state = JSON.parse(JSON.stringify(defaultState));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      renderUI();
+      return;
+    }
 
     const incomingActionId = cloudData.lastAction ? cloudData.lastAction.actionId : 0;
     if (incomingActionId && incomingActionId === lastActionId) return;
     lastActionId = incomingActionId;
 
-    state = {
-      ...defaultState,
-      ...cloudData,
-      t1: { ...defaultState.t1, ...(cloudData.t1 || {}) },
-      t2: { ...defaultState.t2, ...(cloudData.t2 || {}) }
-    };
-    localStorage.setItem('tpbl_clean_state_v2', JSON.stringify(state));
+    state = normalizeState(cloudData);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 
-    if (cloudData.lastAction && cloudData.lastAction.type === 'score_update') {
+    if (cloudData.lastAction && cloudData.lastAction.type === 'reset') {
+      clearAllAnimations();
+      renderUI();
+    } else if (cloudData.lastAction && cloudData.lastAction.type === 'score_update') {
       const act = cloudData.lastAction;
       renderUI(act.teamKey);
       playScoreAnimation(act.teamKey, act.delta, act.oldTotal, act.newTotal);
@@ -1298,24 +1386,32 @@
     }
   });
 
+  // 同電腦跨視窗 / OBS 瀏覽器來源即時同步
   channel.onmessage = (ev) => {
     if (!ev.data) return;
-    if (ev.data.type === 'sync') {
-      state = ev.data.state;
+    if (ev.data.type === 'reset') {
+      clearAllAnimations();
+      state = normalizeState(ev.data.state);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      renderUI();
+    } else if (ev.data.type === 'sync') {
+      state = normalizeState(ev.data.state);
       renderUI();
     } else if (ev.data.type === 'score_update') {
-      state = ev.data.state;
+      state = normalizeState(ev.data.state);
       renderUI(ev.data.teamKey);
-      playScoreAnimation(ev.data.teamKey, ev.data.delta, ev.data.oldTotal, ev.data.newTotal);
-    } else if (ev.data.type === 'reset') {
-      localStorage.removeItem('tpbl_clean_state_v2');
-      location.reload();
+      playScoreAnimation(ev.data.teamKey, ev.data.delta, ev.data.oldTotal, ev.data.oldTotal !== undefined ? ev.data.newTotal : getTotal(state[ev.data.teamKey]));
     }
   };
 
   window.addEventListener('storage', (ev) => {
-    if (ev.key === 'tpbl_clean_state_v2' && ev.newValue) {
-      state = JSON.parse(ev.newValue);
+    if (ev.key === STORAGE_KEY) {
+      if (!ev.newValue) {
+        clearAllAnimations();
+        state = JSON.parse(JSON.stringify(defaultState));
+      } else {
+        state = normalizeState(JSON.parse(ev.newValue));
+      }
       renderUI();
     }
   });
