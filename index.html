@@ -107,7 +107,7 @@
   .live-team-banner {
     display: flex;
     align-items: center;
-    padding: 0 18px;
+    padding: 0 16px;
     flex: 1;
     min-width: 0;
     position: relative;
@@ -122,11 +122,13 @@
     flex-direction: row-reverse;
   }
 
-  /* 球隊 Logo 放大並置於最左/最外側 */
+  /* 球隊 Logo：固定相同大小正方形、完整顯示且最適版面 */
   .live-logo {
-    width: 68px;
-    height: 68px;
+    width: 72px;
+    height: 72px;
+    aspect-ratio: 1 / 1;
     object-fit: contain;
+    object-position: center;
     filter: drop-shadow(0 3px 6px rgba(0,0,0,0.65));
     flex-shrink: 0;
   }
@@ -300,7 +302,7 @@
     box-shadow: 0 0 10px rgba(239, 68, 68, 1);
   }
 
-  /* 中間比賽名稱：塞滿中間空白處，塞不下時自動縮小換行 */
+  /* 中間比賽名稱：僅依手動 Enter 換行，不自動換行 */
   .live-title-wrap {
     flex: 1;
     min-width: 0;
@@ -316,10 +318,8 @@
     letter-spacing: 1.5px;
     text-align: center;
     color: #f8fafc;
-    width: 100%;
     line-height: 1.25;
-    word-break: break-word;
-    overflow-wrap: break-word;
+    white-space: pre;
   }
 
   /* =========================================================
@@ -352,18 +352,24 @@
     border-bottom: 1px solid #262f3d;
   }
 
-  /* 總計分板左上角比賽名稱：放大顯示，塞不下時自動縮小換行 */
-  .league-title {
+  /* 總計分板左上角比賽名稱：僅依手動 Enter 換行，不自動換行 */
+  .league-title-wrap {
+    width: 420px;
     padding-left: 18px;
     padding-right: 14px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+  }
+
+  .league-title {
     font-style: italic;
     font-size: 24px;
     font-weight: 900;
     color: #ffffff;
     letter-spacing: 1px;
-    word-break: break-word;
-    overflow-wrap: break-word;
     line-height: 1.25;
+    white-space: pre;
   }
 
   .col-q { text-align: center; color: #e0e6ed; }
@@ -384,16 +390,18 @@
     height: 100%;
     display: flex;
     align-items: center;
-    padding: 0 32px 0 18px;
+    padding: 0 32px 0 16px;
     clip-path: polygon(0 0, 100% 0, 93% 100%, 0% 100%);
     gap: 14px;
   }
 
-  /* 總計分板 Logo 放大 */
+  /* 總計分板 Logo：固定相同大小正方形、完整顯示且最適版面 */
   .team-logo {
-    height: 54px;
-    width: 54px;
+    height: 56px;
+    width: 56px;
+    aspect-ratio: 1 / 1;
     object-fit: contain;
+    object-position: center;
     filter: drop-shadow(0 2px 5px rgba(0,0,0,0.55));
     flex-shrink: 0;
   }
@@ -517,6 +525,7 @@
     color: #ffffff;
     font-size: 15px;
     font-weight: bold;
+    resize: vertical;
   }
 
   .color-picker-input {
@@ -669,7 +678,7 @@
             <div class="live-foul-section home">
               <div class="foul-bars" id="live-t1-fouls-bar"></div>
             </div>
-            <div class="live-title-wrap">
+            <div class="live-title-wrap" id="live-title-wrap">
               <div class="live-title-text" id="live-title-display">桃源區運動會社會女子組籃球決賽</div>
             </div>
             <div class="live-foul-section away">
@@ -688,7 +697,9 @@
       <div class="scale-inner" id="scale-inner-summary">
         <div class="scoreboard">
           <div class="row header-row">
-            <div class="league-title" id="sum-league-title">桃源區運動會社會女子組籃球決賽</div>
+            <div class="league-title-wrap" id="sum-title-wrap">
+              <div class="league-title" id="sum-league-title">桃源區運動會社會女子組籃球決賽</div>
+            </div>
             <div class="col-q">1<sup>st</sup></div>
             <div class="col-q">2<sup>nd</sup></div>
             <div class="col-q">3<sup>rd</sup></div>
@@ -727,9 +738,9 @@
   <!-- 3. 控制台 (?mode=control) -->
   <div id="control-section">
     <div class="ctrl-top-bar">
-      <div class="ctrl-row" style="margin-bottom:0; flex:1; min-width:220px;">
-        <label>比賽名稱 (手動輸入，過長時自動縮小換行)</label>
-        <input type="text" class="team-name-input" id="in-game-title" value="桃源區運動會社會女子組籃球決賽" oninput="updateGameTitle()">
+      <div class="ctrl-row" style="margin-bottom:0; flex:1; min-width:240px;">
+        <label>比賽名稱 (按 Enter 可手動換行，不自動換行)</label>
+        <textarea class="team-name-input" id="in-game-title" rows="2" oninput="updateGameTitle()">桃源區運動會社會女子組籃球決賽</textarea>
       </div>
       <div class="period-selector">
         <span style="font-weight:bold; color:#cbd5e1; margin-right:4px;">節數：</span>
@@ -752,7 +763,7 @@
         </div>
 
         <div class="ctrl-row">
-          <label>球隊 Logo (上傳圖片)</label>
+          <label>球隊 Logo (自動偵測並統一正方形大小)</label>
           <div class="logo-upload-row">
             <button class="ctrl-btn" onclick="document.getElementById('file-t1').click()">📁 選擇圖片上傳</button>
             <button class="ctrl-btn" id="del-logo-t1" style="display:none;" onclick="removeLogo('t1')">✕ 移除</button>
@@ -790,7 +801,7 @@
         </div>
 
         <div class="ctrl-row">
-          <label>球隊 Logo (上傳圖片)</label>
+          <label>球隊 Logo (自動偵測並統一正方形大小)</label>
           <div class="logo-upload-row">
             <button class="ctrl-btn" onclick="document.getElementById('file-t2').click()">📁 選擇圖片上傳</button>
             <button class="ctrl-btn" id="del-logo-t2" style="display:none;" onclick="removeLogo('t2')">✕ 移除</button>
@@ -927,35 +938,25 @@
     return p === 1 ? '1st' : p === 2 ? '2nd' : p === 3 ? '3rd' : '4th';
   }
 
-  // 根據比賽名稱字數自動調整字體大小與換行，避免擠在一起
+  // 僅根據使用者手動按 Enter 的行數與寬度自動縮放字級，不自動換行
   function adjustTitleFontSize(text) {
+    const lines = (text || '').split('\n');
+    const lineCount = Math.max(1, lines.length);
+
+    const fitElement = (el, wrapWidth, maxFont) => {
+      if (!el) return;
+      let size = lineCount > 1 ? Math.min(maxFont, Math.floor(44 / lineCount)) : maxFont;
+      el.style.fontSize = size + 'px';
+      while (el.scrollWidth > wrapWidth && size > 10) {
+        size -= 1;
+        el.style.fontSize = size + 'px';
+      }
+    };
+
     const liveTitle = document.getElementById('live-title-display');
     const sumTitle = document.getElementById('sum-league-title');
-    const len = (text || '').length;
-
-    if (liveTitle) {
-      if (len <= 14) {
-        liveTitle.style.fontSize = '26px';
-      } else if (len <= 20) {
-        liveTitle.style.fontSize = '22px';
-      } else if (len <= 28) {
-        liveTitle.style.fontSize = '18px';
-      } else {
-        liveTitle.style.fontSize = '15px';
-      }
-    }
-
-    if (sumTitle) {
-      if (len <= 14) {
-        sumTitle.style.fontSize = '25px';
-      } else if (len <= 20) {
-        sumTitle.style.fontSize = '21px';
-      } else if (len <= 28) {
-        sumTitle.style.fontSize = '18px';
-      } else {
-        sumTitle.style.fontSize = '15px';
-      }
-    }
+    fitElement(liveTitle, 350, 26);
+    fitElement(sumTitle, 385, 25);
   }
 
   // 隨載具（手機直向、橫向、平板、OBS視窗）自動等比例縮放計分板
@@ -995,7 +996,7 @@
   }
 
   function renderUI(skipTeamKey = null) {
-    const titleText = state.gameTitle || '桃源區運動會社會女子組籃球決賽';
+    const titleText = state.gameTitle !== undefined ? state.gameTitle : '桃源區運動會社會女子組籃球決賽';
     document.getElementById('live-title-display').textContent = titleText;
 
     const sumTitle = document.getElementById('sum-league-title');
@@ -1184,14 +1185,74 @@
     renderUI();
   }
 
+  // 自動偵測上傳圖片的實際邊界（裁去多餘透明留白）並等比例置中繪製成 256x256 標準正方形，確保兩隊圖片完整顯示且大小一致
+  function normalizeLogoToSquare(dataUrl, callback) {
+    const img = new Image();
+    img.onload = () => {
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = img.width;
+      tempCanvas.height = img.height;
+      const tempCtx = tempCanvas.getContext('2d');
+      tempCtx.drawImage(img, 0, 0);
+
+      let minX = 0, minY = 0, maxX = img.width, maxY = img.height;
+      try {
+        const imgData = tempCtx.getImageData(0, 0, img.width, img.height).data;
+        let top = img.height, left = img.width, right = 0, bottom = 0;
+        let found = false;
+        for (let y = 0; y < img.height; y++) {
+          for (let x = 0; x < img.width; x++) {
+            const alpha = imgData[(y * img.width + x) * 4 + 3];
+            if (alpha > 15) {
+              if (x < left) left = x;
+              if (x > right) right = x;
+              if (y < top) top = y;
+              if (y > bottom) bottom = y;
+              found = true;
+            }
+          }
+        }
+        if (found && right >= left && bottom >= top) {
+          minX = left;
+          minY = top;
+          maxX = right + 1;
+          maxY = bottom + 1;
+        }
+      } catch (e) {}
+
+      const cropW = Math.max(1, maxX - minX);
+      const cropH = Math.max(1, maxY - minY);
+      const targetSize = 256;
+      const padding = 8;
+      const avail = targetSize - padding * 2;
+      const scale = Math.min(avail / cropW, avail / cropH);
+      const drawW = cropW * scale;
+      const drawH = cropH * scale;
+      const dx = (targetSize - drawW) / 2;
+      const dy = (targetSize - drawH) / 2;
+
+      const outCanvas = document.createElement('canvas');
+      outCanvas.width = targetSize;
+      outCanvas.height = targetSize;
+      const outCtx = outCanvas.getContext('2d');
+      outCtx.drawImage(img, minX, minY, cropW, cropH, dx, dy, drawW, drawH);
+
+      callback(outCanvas.toDataURL('image/png'));
+    };
+    img.onerror = () => callback(dataUrl);
+    img.src = dataUrl;
+  }
+
   function uploadLogo(teamKey, inputEl) {
     const file = inputEl.files[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onload = (e) => {
-      state[teamKey].logo = e.target.result;
-      saveState(true);
-      renderUI();
+      normalizeLogoToSquare(e.target.result, (squareDataUrl) => {
+        state[teamKey].logo = squareDataUrl;
+        saveState(true);
+        renderUI();
+      });
     };
     reader.readAsDataURL(file);
   }
