@@ -262,7 +262,7 @@
     width: 100%;
   }
 
-  /* 左右犯規橫條固定於兩隊色塊下方寬度內 */
+  /* 左右犯規橫條固定於兩隊色塊下方寬度內，且統一由左到右排列 */
   .live-foul-section {
     display: flex;
     align-items: center;
@@ -271,7 +271,7 @@
   }
 
   .live-foul-section.away {
-    flex-direction: row-reverse;
+    flex-direction: row;
   }
 
   .foul-bars {
@@ -281,7 +281,7 @@
   }
 
   .live-foul-section.away .foul-bars {
-    flex-direction: row-reverse;
+    flex-direction: row;
   }
 
   .foul-bar-item {
