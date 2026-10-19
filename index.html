@@ -831,9 +831,6 @@
     </div>
   </div>
 
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
 <script>
   // 鎖定畫面連點兩下不放大，但保留連點兩下按鈕觸發
   let lastTouchEnd = 0;
@@ -851,14 +848,6 @@
   document.addEventListener('dblclick', (e) => {
     e.preventDefault();
   }, { passive: false });
-
-  const firebaseConfig = {
-    databaseURL: "https://score-record-0000-default-rtdb.asia-southeast1.firebasedatabase.app/"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-  const stateRef = db.ref('tpbl_scoreboard/state');
-  const logsRef = db.ref('tpbl_scoreboard/logs');
 
   const params = new URLSearchParams(window.location.search);
   const viewParam = params.get('view');
@@ -881,7 +870,6 @@
 
   let state = loadState();
   let animTimers = { t1: null, t2: null };
-  let lastActionId = 0;
 
   function loadState() {
     try {
@@ -892,36 +880,11 @@
     }
   }
 
-  function saveState(broadcast = true, actionMeta = null) {
-    const actionId = Date.now() + Math.random();
-    lastActionId = actionId;
-    state.updatedAt = new Date().toISOString();
-    state.lastAction = actionMeta ? { ...actionMeta, actionId } : { type: 'sync', actionId };
-
+  function saveState(broadcast = true) {
     localStorage.setItem('tpbl_clean_state_v2', JSON.stringify(state));
     if (broadcast) {
       channel.postMessage({ type: 'sync', state });
     }
-
-    stateRef.set(state).catch((err) => {
-      console.error('Firebase 寫入失敗：', err);
-    });
-  }
-
-  function pushFirebaseLog(actionDesc, extraData = {}) {
-    logsRef.push({
-      timestamp: new Date().toISOString(),
-      period: state.period,
-      action: actionDesc,
-      gameTitle: state.gameTitle,
-      t1_name: state.t1.name,
-      t1_total: getTotal(state.t1),
-      t2_name: state.t2.name,
-      t2_total: getTotal(state.t2),
-      ...extraData
-    }).catch((err) => {
-      console.error('Firebase 紀錄寫入失敗：', err);
-    });
   }
 
   function getTotal(teamObj) {
@@ -1102,16 +1065,13 @@
         curSlot.textContent = newTotal;
       }, 1360);
     } else if (delta === 3) {
-      // 1. 強制隱藏底層分數軌道，確保 +3 顯示時背後完全沒有分數！
       track.style.visibility = 'hidden';
       track.style.opacity = '0';
 
-      // 2. 顯示實心深底色 +3 圖層，且只讓 +3 數字震動（外框完全不動）
       shakeLayer.style.display = 'flex';
       void shakeText.offsetWidth;
       shakeText.classList.add('animating-shake-text');
 
-      // 3. 震動結束後隱藏 +3，恢復顯示加完 3 分後的新分數
       animTimers[teamKey] = setTimeout(() => {
         shakeLayer.style.display = 'none';
         shakeText.classList.remove('animating-shake-text');
@@ -1135,9 +1095,7 @@
     state[teamKey][qKey] = Math.max(0, curQScore + delta);
     const newTotal = getTotal(state[teamKey]);
 
-    saveState(false, { type: 'score_update', teamKey, delta, oldTotal, newTotal });
-    pushFirebaseLog(`${state[teamKey].name} ${delta > 0 ? '+' + delta : delta}`, { teamKey, delta, oldTotal, newTotal });
-
+    saveState(true);
     renderUI(teamKey);
     playScoreAnimation(teamKey, delta, oldTotal, newTotal);
 
@@ -1154,21 +1112,18 @@
     if (state.t2[qKey] === null || state.t2[qKey] === undefined) state.t2[qKey] = 0;
 
     saveState(true);
-    pushFirebaseLog(`切換至第 ${p} 節（犯規重置）`);
     renderUI();
   }
 
   function changeFouls(teamKey, delta) {
     state[teamKey].fouls = Math.max(0, Math.min(5, (state[teamKey].fouls || 0) + delta));
     saveState(true);
-    pushFirebaseLog(`${state[teamKey].name} 團犯變更為 ${state[teamKey].fouls} 次`);
     renderUI();
   }
 
   function setFoulsDirect(teamKey, val) {
     state[teamKey].fouls = (state[teamKey].fouls === val) ? val - 1 : val;
     saveState(true);
-    pushFirebaseLog(`${state[teamKey].name} 團犯變更為 ${state[teamKey].fouls} 次`);
     renderUI();
   }
 
@@ -1185,7 +1140,6 @@
     renderUI();
   }
 
-  // 自動偵測上傳圖片的實際邊界（裁去多餘透明留白）並等比例置中繪製成 256x256 標準正方形，確保兩隊圖片完整顯示且大小一致
   function normalizeLogoToSquare(dataUrl, callback) {
     const img = new Image();
     img.onload = () => {
@@ -1273,34 +1227,8 @@
       state[k].q4 = null;
     });
     saveState(true);
-    pushFirebaseLog('歸零重設整場比分');
     renderUI();
   }
-
-  stateRef.on('value', (snapshot) => {
-    const cloudData = snapshot.val();
-    if (!cloudData) return;
-
-    const incomingActionId = cloudData.lastAction ? cloudData.lastAction.actionId : 0;
-    if (incomingActionId && incomingActionId === lastActionId) return;
-    lastActionId = incomingActionId;
-
-    state = {
-      ...defaultState,
-      ...cloudData,
-      t1: { ...defaultState.t1, ...(cloudData.t1 || {}) },
-      t2: { ...defaultState.t2, ...(cloudData.t2 || {}) }
-    };
-    localStorage.setItem('tpbl_clean_state_v2', JSON.stringify(state));
-
-    if (cloudData.lastAction && cloudData.lastAction.type === 'score_update') {
-      const act = cloudData.lastAction;
-      renderUI(act.teamKey);
-      playScoreAnimation(act.teamKey, act.delta, act.oldTotal, act.newTotal);
-    } else {
-      renderUI();
-    }
-  });
 
   channel.onmessage = (ev) => {
     if (!ev.data) return;
