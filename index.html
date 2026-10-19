@@ -57,7 +57,7 @@
     overflow-x: auto;
   }
 
-  /* 1. 場上即時轉播計分板 (?view=live) - 仿圖拉長設計與比例調整 */
+  /* 1. 場上即時轉播計分板 (?view=live) */
   .live-scorebug-wrapper {
     display: flex;
     flex-direction: column;
@@ -66,15 +66,16 @@
     max-width: 1040px;
   }
 
+  /* 比賽名稱移到下方，字體放大 */
   .live-title-bar {
     background: #090d14;
     color: #cbd5e1;
-    font-size: 13px;
+    font-size: 16px;
     font-weight: 800;
     letter-spacing: 1.5px;
-    padding: 6px 16px;
-    border-radius: 6px 6px 0 0;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
+    padding: 8px 16px;
+    border-radius: 0 0 8px 8px;
+    border-top: 1px solid rgba(255,255,255,0.08);
     text-align: center;
     word-break: break-word;
     overflow-wrap: break-word;
@@ -86,7 +87,7 @@
     align-items: stretch;
     height: 78px;
     background: #11161f;
-    border-radius: 8px;
+    border-radius: 8px 8px 0 0;
     overflow: hidden;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.75);
     border: 1px solid rgba(255, 255, 255, 0.15);
@@ -138,7 +139,7 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    gap: 6px;
+    gap: 4px;
     flex: 1;
     overflow: hidden;
   }
@@ -158,17 +159,17 @@
     text-overflow: ellipsis;
   }
 
-  /* 犯規次數拉到最左與最右（仍在隊名內） */
+  /* 犯規次數移到下方並放大字體 */
   .foul-bars {
     display: flex;
-    gap: 4px;
+    gap: 5px;
     width: 100%;
     justify-content: space-between;
   }
 
   .foul-bar-item {
     flex: 1;
-    height: 4px;
+    height: 6px;
     border-radius: 2px;
     background: rgba(255, 255, 255, 0.25);
     transition: background-color 0.25s, box-shadow 0.25s;
@@ -232,7 +233,7 @@
     animation: slideScoreSequence 1.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   }
 
-  /* 僅「+3」字樣震動，不震動整個框 */
+  /* 僅「+3」數字震動動畫 */
   @keyframes shakeTextOnly {
     0%, 100% { transform: translate(0, 0); }
     20% { transform: translate(-4px, -2px); }
@@ -284,7 +285,6 @@
     border-bottom: 1px solid #262f3d;
   }
 
-  /* 總計分版比賽名稱塞不下時自動縮小換行 */
   .league-title {
     padding-left: 20px;
     padding-right: 10px;
@@ -543,7 +543,6 @@
   <div id="live-section">
     <div class="preview-label">▼ 預覽 1：場上即時計分板（OBS 連結參數：?view=live）</div>
     <div class="live-scorebug-wrapper">
-      <div class="live-title-bar" id="live-title-display">TPBL 2026-27 例行賽 G002 高雄全家海神 vs. 福爾摩沙夢想家</div>
       <div class="live-scorebug">
         <div class="live-team home">
           <div class="live-team-banner" id="live-t1-bg" style="background: #1b4f9c;">
@@ -559,7 +558,8 @@
               <div class="score-slot plus-badge" id="slot-t1-plus">+2</div>
               <div class="score-slot" id="slot-t1-next">112</div>
             </div>
-            <div class="shake-plus3-layer" id="shake-t1" style="position:absolute; inset:0; display:none; align-items:center; justify-content:center; font-size:36px; font-weight:900; color:#38bdf8; z-index:5;"><span class="animating-shake-text">+3</span></div>
+            <!-- +3 動效：純紅色 +3 浮現並震動，不含分數 -->
+            <div class="shake-plus3-layer" id="shake-t1" style="position:absolute; inset:0; display:none; align-items:center; justify-content:center; font-size:40px; font-weight:900; color:#ef4444; z-index:5;"><span class="animating-shake-text">+3</span></div>
           </div>
         </div>
 
@@ -579,10 +579,13 @@
               <div class="score-slot plus-badge" id="slot-t2-plus">+2</div>
               <div class="score-slot" id="slot-t2-next">113</div>
             </div>
-            <div class="shake-plus3-layer" id="shake-t2" style="position:absolute; inset:0; display:none; align-items:center; justify-content:center; font-size:36px; font-weight:900; color:#38bdf8; z-index:5;"><span class="animating-shake-text">+3</span></div>
+            <!-- +3 動效：純紅色 +3 浮現並震動，不含分數 -->
+            <div class="shake-plus3-layer" id="shake-t2" style="position:absolute; inset:0; display:none; align-items:center; justify-content:center; font-size:40px; font-weight:900; color:#ef4444; z-index:5;"><span class="animating-shake-text">+3</span></div>
           </div>
         </div>
       </div>
+      <!-- 比賽名稱移到下方，字體放大 -->
+      <div class="live-title-bar" id="live-title-display">TPBL 2026-27 例行賽 G002 高雄全家海神 vs. 福爾摩沙夢想家</div>
     </div>
   </div>
 
@@ -660,7 +663,7 @@
         </div>
 
         <div class="ctrl-row">
-          <label>加扣分控制 (+1/+2 滑動、+3 僅文字震動)</label>
+          <label>加扣分控制 (+1/+2 滑動、+3 僅紅色字體震動)</label>
           <div class="score-btn-group">
             <button class="score-btn btn-p1" onclick="addScore('t1', 1)">+1</button>
             <button class="score-btn btn-p2" onclick="addScore('t1', 2)">+2</button>
@@ -698,7 +701,7 @@
         </div>
 
         <div class="ctrl-row">
-          <label>加扣分控制 (+1/+2 滑動、+3 僅文字震動)</label>
+          <label>加扣分控制 (+1/+2 滑動、+3 僅紅色字體震動)</label>
           <div class="score-btn-group">
             <button class="score-btn btn-p1" onclick="addScore('t2', 1)">+1</button>
             <button class="score-btn btn-p2" onclick="addScore('t2', 2)">+2</button>
@@ -933,7 +936,7 @@
         curSlot.textContent = newTotal;
       }, 1360);
     } else if (delta === 3) {
-      // 僅「+3」文字震動，框體完全不動
+      // 僅顯示紅色「+3」文字震動，不含分數
       curSlot.textContent = newTotal;
       nextSlot.textContent = newTotal;
       shakeLayer.style.display = 'flex';
