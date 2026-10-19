@@ -51,13 +51,15 @@
 
   body.view-control #live-section,
   body.view-control #summary-section {
-    margin-bottom: 20px;
+    margin-bottom: 25px;
     width: 100%;
     max-width: 1060px;
     overflow-x: auto;
   }
 
-  /* 1. 場上即時轉播計分板 (?view=live) */
+  /* =========================================================
+     1. 場上即時轉播計分板 (?view=live)
+     ========================================================= */
   .live-scorebug-wrapper {
     display: flex;
     flex-direction: column;
@@ -66,28 +68,29 @@
     max-width: 1040px;
   }
 
-  /* 比賽名稱移到下方，字體放大 */
+  /* 比賽名稱移到下方，字體放大且置中 */
   .live-title-bar {
     background: #090d14;
-    color: #cbd5e1;
-    font-size: 16px;
+    color: #e2e8f0;
+    font-size: 18px;
     font-weight: 800;
     letter-spacing: 1.5px;
-    padding: 8px 16px;
-    border-radius: 0 0 8px 8px;
-    border-top: 1px solid rgba(255,255,255,0.08);
+    padding: 10px 18px;
+    border-radius: 0 0 10px 10px;
+    border-top: 1px solid rgba(255,255,255,0.12);
     text-align: center;
     word-break: break-word;
     overflow-wrap: break-word;
+    line-height: 1.3;
     display: none;
   }
 
   .live-scorebug {
     display: flex;
     align-items: stretch;
-    height: 78px;
+    height: 92px;
     background: #11161f;
-    border-radius: 8px 8px 0 0;
+    border-radius: 10px 10px 0 0;
     overflow: hidden;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.75);
     border: 1px solid rgba(255, 255, 255, 0.15);
@@ -111,35 +114,31 @@
     padding: 0 16px;
     flex: 1;
     position: relative;
-    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .live-team.home .live-team-banner {
+    flex-direction: row;
   }
 
   .live-team.away .live-team-banner {
     flex-direction: row-reverse;
   }
 
-  /* 球隊 Logo 調小 */
+  /* Logo 移至最左/最右並放大 */
   .live-logo {
-    width: 30px;
-    height: 30px;
+    width: 48px;
+    height: 48px;
     object-fit: contain;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+    filter: drop-shadow(0 2px 5px rgba(0,0,0,0.6));
     flex-shrink: 0;
-  }
-
-  .live-team.home .live-logo {
-    margin-right: 10px;
-  }
-
-  .live-team.away .live-logo {
-    margin-left: 10px;
   }
 
   .live-info {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    gap: 4px;
+    gap: 5px;
     flex: 1;
     overflow: hidden;
   }
@@ -148,46 +147,51 @@
     align-items: flex-end;
   }
 
-  /* 隊名加大 */
+  /* 隊名大幅放大 */
   .live-name {
-    font-size: 30px;
+    font-size: 34px;
     font-weight: 900;
     letter-spacing: 1.5px;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.65);
+    text-shadow: 0 2px 5px rgba(0,0,0,0.7);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    line-height: 1.1;
   }
 
-  /* 犯規次數移到下方並放大字體 */
+  /* 犯規次數移到隊名下方，橫跨對齊 */
   .foul-bars {
     display: flex;
-    gap: 5px;
+    gap: 6px;
     width: 100%;
-    justify-content: space-between;
+    max-width: 280px;
+  }
+
+  .live-team.away .foul-bars {
+    flex-direction: row-reverse;
   }
 
   .foul-bar-item {
     flex: 1;
     height: 6px;
-    border-radius: 2px;
-    background: rgba(255, 255, 255, 0.25);
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.28);
     transition: background-color 0.25s, box-shadow 0.25s;
   }
 
   .foul-bar-item.active {
     background: #facc15;
-    box-shadow: 0 0 5px rgba(250, 204, 21, 0.85);
+    box-shadow: 0 0 6px rgba(250, 204, 21, 0.9);
   }
 
   .foul-bar-item.bonus-danger {
     background: #ef4444;
-    box-shadow: 0 0 6px rgba(239, 68, 68, 0.95);
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.95);
   }
 
   .live-score-box {
-    width: 105px;
-    height: 78px;
+    width: 110px;
+    height: 92px;
     background: #090c12;
     position: relative;
     overflow: hidden;
@@ -198,48 +202,48 @@
 
   .score-track {
     width: 100%;
-    height: 234px;
+    height: 276px;
     display: flex;
     flex-direction: column;
     transform: translateY(0);
   }
 
   .score-slot {
-    width: 105px;
-    height: 78px;
+    width: 110px;
+    height: 92px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 42px;
+    font-size: 46px;
     font-weight: 900;
     flex-shrink: 0;
   }
 
   .score-slot.plus-badge {
     color: #38bdf8;
-    font-size: 34px;
+    font-size: 38px;
     background: rgba(14, 165, 233, 0.15);
   }
 
   @keyframes slideScoreSequence {
     0%   { transform: translateY(0); }
-    18%  { transform: translateY(-78px); }
-    72%  { transform: translateY(-78px); }
-    92%  { transform: translateY(-156px); }
-    100% { transform: translateY(-156px); }
+    18%  { transform: translateY(-92px); }
+    72%  { transform: translateY(-92px); }
+    92%  { transform: translateY(-184px); }
+    100% { transform: translateY(-184px); }
   }
 
   .animating-slide {
     animation: slideScoreSequence 1.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   }
 
-  /* 僅「+3」數字震動動畫 */
+  /* +3 獨立震動文字動畫 */
   @keyframes shakeTextOnly {
-    0%, 100% { transform: translate(0, 0); }
-    20% { transform: translate(-4px, -2px); }
-    40% { transform: translate(4px, 2px); }
-    60% { transform: translate(-4px, 2px); }
-    80% { transform: translate(4px, -2px); }
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    20% { transform: translate(-5px, -3px) scale(1.1); }
+    40% { transform: translate(5px, 3px) scale(1.1); }
+    60% { transform: translate(-5px, 3px) scale(1.1); }
+    80% { transform: translate(5px, -3px) scale(1.1); }
   }
 
   .animating-shake-text {
@@ -247,22 +251,24 @@
   }
 
   .live-center-period {
-    width: 95px;
+    width: 100px;
     display: flex;
     align-items: center;
     justify-content: center;
     background: #141923;
-    font-size: 26px;
+    font-size: 30px;
     font-weight: 900;
     color: #facc15;
     letter-spacing: 1px;
     flex-shrink: 0;
   }
 
-  /* 2. TPBL 單節總計分板 (?view=summary) */
+  /* =========================================================
+     2. TPBL 單節總計分板 (?view=summary)
+     ========================================================= */
   .scoreboard {
     width: 100%;
-    max-width: 1040px;
+    max-width: 1060px;
     background: linear-gradient(180deg, #161c24 0%, #090c10 100%);
     color: #ffffff;
     border-bottom: 3px solid #2a3546;
@@ -272,12 +278,12 @@
 
   .row {
     display: grid;
-    grid-template-columns: 340px 90px 90px 90px 90px 160px;
+    grid-template-columns: 360px 90px 90px 90px 90px 160px;
     align-items: center;
   }
 
   .header-row {
-    height: 38px;
+    height: 42px;
     background: #0c1017;
     font-weight: 900;
     font-size: 18px;
@@ -285,16 +291,18 @@
     border-bottom: 1px solid #262f3d;
   }
 
+  /* 總計分版比賽名稱字體放大，塞不下時自動換行 */
   .league-title {
     padding-left: 20px;
     padding-right: 10px;
     font-style: italic;
-    font-size: 16px;
-    color: #ffffff;
-    letter-spacing: 1px;
+    font-size: 17px;
+    font-weight: 800;
+    color: #e2e8f0;
+    letter-spacing: 0.5px;
     word-break: break-word;
     overflow-wrap: break-word;
-    line-height: 1.2;
+    line-height: 1.25;
   }
 
   .col-q { text-align: center; color: #e0e6ed; }
@@ -307,7 +315,7 @@
   }
 
   .team-row {
-    height: 54px;
+    height: 60px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   }
 
@@ -317,19 +325,21 @@
     align-items: center;
     padding-left: 16px;
     clip-path: polygon(0 0, 100% 0, 92% 100%, 0% 100%);
+    gap: 12px;
   }
 
+  /* 總表 Logo 放大 */
   .team-logo {
-    height: 34px;
-    width: 34px;
+    height: 42px;
+    width: 42px;
     object-fit: contain;
-    margin-right: 12px;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
     flex-shrink: 0;
   }
 
+  /* 總表隊名放大 */
   .team-name {
-    font-size: 28px;
+    font-size: 30px;
     font-weight: 900;
     letter-spacing: 2px;
     text-shadow: 1px 2px 4px rgba(0, 0, 0, 0.6);
@@ -340,22 +350,24 @@
 
   .score-q {
     text-align: center;
-    font-size: 28px;
+    font-size: 30px;
     font-weight: 800;
     color: #b0b8c4;
   }
 
   .score-total {
     text-align: center;
-    font-size: 32px;
+    font-size: 34px;
     font-weight: 900;
     color: #ffffff;
   }
 
-  /* 3. 控制台 */
+  /* =========================================================
+     3. 控制台
+     ========================================================= */
   #control-section {
     width: 100%;
-    max-width: 1040px;
+    max-width: 1060px;
     background: #181d26;
     border: 1px solid #2a3140;
     border-radius: 10px;
@@ -548,18 +560,18 @@
           <div class="live-team-banner" id="live-t1-bg" style="background: #1b4f9c;">
             <img id="live-t1-logo" class="live-logo" src="" alt="" style="display:none;">
             <div class="live-info">
-              <div class="live-name" id="live-t1-name">高雄全家海神</div>
+              <div class="live-name" id="live-t1-name">寶山里</div>
               <div class="foul-bars" id="live-t1-fouls"></div>
             </div>
           </div>
           <div class="live-score-box" id="box-t1">
             <div class="score-track" id="track-t1">
-              <div class="score-slot" id="slot-t1-cur">112</div>
+              <div class="score-slot" id="slot-t1-cur">86</div>
               <div class="score-slot plus-badge" id="slot-t1-plus">+2</div>
-              <div class="score-slot" id="slot-t1-next">112</div>
+              <div class="score-slot" id="slot-t1-next">86</div>
             </div>
-            <!-- +3 動效：純紅色 +3 浮現並震動，不含分數 -->
-            <div class="shake-plus3-layer" id="shake-t1" style="position:absolute; inset:0; display:none; align-items:center; justify-content:center; font-size:40px; font-weight:900; color:#ef4444; z-index:5;"><span class="animating-shake-text">+3</span></div>
+            <!-- +3 動效：純紅色 +3 浮現並震動，絕無後面分數殘影 -->
+            <div class="shake-plus3-layer" id="shake-t1" style="position:absolute; inset:0; display:none; align-items:center; justify-content:center; font-size:42px; font-weight:900; color:#ef4444; z-index:5;"><span class="animating-shake-text">+3</span></div>
           </div>
         </div>
 
@@ -569,23 +581,23 @@
           <div class="live-team-banner" id="live-t2-bg" style="background: #689f38;">
             <img id="live-t2-logo" class="live-logo" src="" alt="" style="display:none;">
             <div class="live-info">
-              <div class="live-name" id="live-t2-name">福爾摩沙夢想家</div>
+              <div class="live-name" id="live-t2-name">勤和里</div>
               <div class="foul-bars" id="live-t2-fouls"></div>
             </div>
           </div>
           <div class="live-score-box" id="box-t2">
             <div class="score-track" id="track-t2">
-              <div class="score-slot" id="slot-t2-cur">113</div>
+              <div class="score-slot" id="slot-t2-cur">51</div>
               <div class="score-slot plus-badge" id="slot-t2-plus">+2</div>
-              <div class="score-slot" id="slot-t2-next">113</div>
+              <div class="score-slot" id="slot-t2-next">51</div>
             </div>
-            <!-- +3 動效：純紅色 +3 浮現並震動，不含分數 -->
-            <div class="shake-plus3-layer" id="shake-t2" style="position:absolute; inset:0; display:none; align-items:center; justify-content:center; font-size:40px; font-weight:900; color:#ef4444; z-index:5;"><span class="animating-shake-text">+3</span></div>
+            <!-- +3 動效：純紅色 +3 浮現並震動，絕無後面分數殘影 -->
+            <div class="shake-plus3-layer" id="shake-t2" style="position:absolute; inset:0; display:none; align-items:center; justify-content:center; font-size:42px; font-weight:900; color:#ef4444; z-index:5;"><span class="animating-shake-text">+3</span></div>
           </div>
         </div>
       </div>
-      <!-- 比賽名稱移到下方，字體放大 -->
-      <div class="live-title-bar" id="live-title-display">TPBL 2026-27 例行賽 G002 高雄全家海神 vs. 福爾摩沙夢想家</div>
+      <!-- 比賽名稱移到下方，字體放大且置中 -->
+      <div class="live-title-bar" id="live-title-display">桃源區運動會社會女子組籃球決賽</div>
     </div>
   </div>
 
@@ -593,7 +605,7 @@
     <div class="preview-label">▼ 預覽 2：單節總計分板（OBS 連結參數：?view=summary）</div>
     <div class="scoreboard">
       <div class="row header-row">
-        <div class="league-title" id="sum-league-title">TPBL 2026-27 例行賽 G002 高雄全家海神 vs. 福爾摩沙夢想家</div>
+        <div class="league-title" id="sum-league-title">桃源區運動會社會女子組籃球決賽</div>
         <div class="col-q">1<sup>st</sup></div>
         <div class="col-q">2<sup>nd</sup></div>
         <div class="col-q">3<sup>rd</sup></div>
@@ -604,25 +616,25 @@
       <div class="row team-row">
         <div class="team-banner" id="sum-t1-bg">
           <img id="sum-t1-logo" class="team-logo" src="" alt="" style="display:none;">
-          <div class="team-name" id="sum-t1-name">高雄全家海神</div>
+          <div class="team-name" id="sum-t1-name">寶山里</div>
         </div>
-        <div class="score-q" id="sum-t1-q1">37</div>
-        <div class="score-q" id="sum-t1-q2">26</div>
-        <div class="score-q" id="sum-t1-q3">25</div>
-        <div class="score-q" id="sum-t1-q4">24</div>
-        <div class="score-total" id="sum-t1-total">112</div>
+        <div class="score-q" id="sum-t1-q1">8</div>
+        <div class="score-q" id="sum-t1-q2">1</div>
+        <div class="score-q" id="sum-t1-q3">8</div>
+        <div class="score-q" id="sum-t1-q4">69</div>
+        <div class="score-total" id="sum-t1-total">86</div>
       </div>
 
       <div class="row team-row">
         <div class="team-banner" id="sum-t2-bg">
           <img id="sum-t2-logo" class="team-logo" src="" alt="" style="display:none;">
-          <div class="team-name" id="sum-t2-name">福爾摩沙夢想家</div>
+          <div class="team-name" id="sum-t2-name">勤和里</div>
         </div>
-        <div class="score-q" id="sum-t2-q1">28</div>
-        <div class="score-q" id="sum-t2-q2">30</div>
-        <div class="score-q" id="sum-t2-q3">31</div>
-        <div class="score-q" id="sum-t2-q4">24</div>
-        <div class="score-total" id="sum-t2-total">113</div>
+        <div class="score-q" id="sum-t2-q1">6</div>
+        <div class="score-q" id="sum-t2-q2">0</div>
+        <div class="score-q" id="sum-t2-q3">0</div>
+        <div class="score-q" id="sum-t2-q4">45</div>
+        <div class="score-total" id="sum-t2-total">51</div>
       </div>
     </div>
   </div>
@@ -631,7 +643,7 @@
     <div class="ctrl-top-bar">
       <div class="ctrl-row" style="margin-bottom:0; flex:1; min-width:220px;">
         <label>比賽名稱 (手動輸入)</label>
-        <input type="text" class="team-name-input" id="in-game-title" value="TPBL 2026-27 例行賽 G002 高雄全家海神 vs. 福爾摩沙夢想家" oninput="updateGameTitle()">
+        <input type="text" class="team-name-input" id="in-game-title" value="桃源區運動會社會女子組籃球決賽" oninput="updateGameTitle()">
       </div>
       <div class="period-selector">
         <span style="font-weight:bold; color:#cbd5e1; margin-right:4px;">節數：</span>
@@ -648,8 +660,8 @@
         <div class="ctrl-row">
           <label>球隊名稱 & 代表色</label>
           <div class="input-with-color">
-            <input type="text" class="team-name-input" id="in-t1-name" value="高雄全家海神" oninput="updateTeamMeta('t1')">
-            <input type="color" class="color-picker-input" id="in-t1-color" value="#1b4f9c" oninput="updateTeamMeta('t1')" title="更改背景代表色">
+            <input type="text" class="team-name-input" id="in-t1-name" value="寶山里" oninput="updateTeamMeta('t1')">
+            <input type="color" class="color-picker-input" id="in-t1-color" value="#a80707" oninput="updateTeamMeta('t1')" title="更改背景代表色">
           </div>
         </div>
 
@@ -686,7 +698,7 @@
         <div class="ctrl-row">
           <label>球隊名稱 & 代表色</label>
           <div class="input-with-color">
-            <input type="text" class="team-name-input" id="in-t2-name" value="福爾摩沙夢想家" oninput="updateTeamMeta('t2')">
+            <input type="text" class="team-name-input" id="in-t2-name" value="勤和里" oninput="updateTeamMeta('t2')">
             <input type="color" class="color-picker-input" id="in-t2-color" value="#689f38" oninput="updateTeamMeta('t2')" title="更改背景代表色">
           </div>
         </div>
@@ -756,10 +768,10 @@
   const channel = new BroadcastChannel('tpbl_clean_sync_v2');
 
   const defaultState = {
-    gameTitle: 'TPBL 2026-27 例行賽 G002 高雄全家海神 vs. 福爾摩沙夢想家',
+    gameTitle: '桃源區運動會社會女子組籃球決賽',
     period: 4,
-    t1: { name: '高雄全家海神', color: '#1b4f9c', logo: '', fouls: 2, q1: 37, q2: 26, q3: 25, q4: 24 },
-    t2: { name: '福爾摩沙夢想家', color: '#689f38', logo: '', fouls: 3, q1: 28, q2: 30, q3: 31, q4: 24 }
+    t1: { name: '寶山里', color: '#a80707', logo: '', fouls: 2, q1: 8, q2: 1, q3: 8, q4: 69 },
+    t2: { name: '勤和里', color: '#689f38', logo: '', fouls: 3, q1: 6, q2: 0, q3: 0, q4: 45 }
   };
 
   let state = loadState();
@@ -838,7 +850,7 @@
   }
 
   function renderUI(skipTeamKey = null) {
-    const titleText = state.gameTitle || 'TPBL 職業籃球聯賽';
+    const titleText = state.gameTitle || '桃源區運動會社會女子組籃球決賽';
     const titleBar = document.getElementById('live-title-display');
     titleBar.textContent = titleText;
     titleBar.style.display = 'block';
@@ -936,7 +948,7 @@
         curSlot.textContent = newTotal;
       }, 1360);
     } else if (delta === 3) {
-      // 僅顯示紅色「+3」文字震動，不含分數
+      // 確保顯示最新總分，且僅浮現紅色 +3 震動，完全沒有分數殘影
       curSlot.textContent = newTotal;
       nextSlot.textContent = newTotal;
       shakeLayer.style.display = 'flex';
